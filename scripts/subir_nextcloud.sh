@@ -2,7 +2,10 @@
 # subir_nextcloud.sh — Busca archivos .docx y .txt y los sube a Nextcloud por WebDAV.
 #
 # Uso:
-#   ./subir_nextcloud.sh [-n] [-c config] CARPETA_ORIGEN [CARPETA_ORIGEN ...]
+#   ./subir_nextcloud.sh [-n] [-c config] [CARPETA_ORIGEN ...]
+#
+#   Sin carpetas: busca en Escritorio, Documentos y Descargas del usuario
+#   con la sesión iniciada (detecta nombres en español o inglés).
 #
 #   -n          Simulación: muestra qué subiría, sin subir nada.
 #   -c ARCHIVO  Archivo de configuración (por defecto: ~/.config/nextcloud-subida.conf)
@@ -26,7 +29,7 @@ while getopts ":nc:h" opt; do
   case "$opt" in
     n) DRY_RUN=1 ;;
     c) CONFIG="$OPTARG" ;;
-    h) sed -n '2,19p' "$0"; exit 0 ;;
+    h) sed -n '2,22p' "$0"; exit 0 ;;
     *) echo "Opción no válida. Usa -h para ver la ayuda." >&2; exit 2 ;;
   esac
 done
@@ -39,7 +42,28 @@ NC_DESTINO="${NC_DESTINO:-Subidas}"
 NC_EXTENSIONES="${NC_EXTENSIONES:-docx txt}"
 NC_URL="${NC_URL%/}"
 
-[[ $# -ge 1 ]] || { echo "Uso: $0 [-n] [-c config] CARPETA_ORIGEN [...]" >&2; exit 2; }
+# Si no se indican carpetas, usar Escritorio, Documentos y Descargas del usuario actual
+if [[ $# -eq 0 ]]; then
+  carpetas=()
+  for par in "DESKTOP:Escritorio:Desktop" "DOCUMENTS:Documentos:Documents" "DOWNLOAD:Descargas:Downloads"; do
+    IFS=: read -r xdg es en <<< "$par"
+    dir=""
+    # Linux: carpeta configurada por el escritorio (respeta el idioma)
+    if command -v xdg-user-dir >/dev/null; then
+      dir="$(xdg-user-dir "$xdg" 2>/dev/null)"
+      [[ "$dir" == "$HOME" ]] && dir=""   # xdg devuelve $HOME si no está definida
+    fi
+    [[ -z "$dir" && -d "$HOME/$es" ]] && dir="$HOME/$es"
+    [[ -z "$dir" && -d "$HOME/$en" ]] && dir="$HOME/$en"
+    if [[ -n "$dir" && -d "$dir" ]]; then
+      carpetas+=("$dir")
+    else
+      echo "Aviso: no se encontró la carpeta $es ($en) en $HOME" >&2
+    fi
+  done
+  [[ ${#carpetas[@]} -gt 0 ]] || { echo "Error: no se encontró ninguna carpeta para revisar." >&2; exit 1; }
+  set -- "${carpetas[@]}"
+fi
 command -v curl >/dev/null || { echo "Error: se necesita curl." >&2; exit 1; }
 
 # Codifica cada segmento de una ruta para la URL (espacios, tildes, ñ, etc.)
