@@ -64,7 +64,13 @@ if [[ $# -eq 0 ]]; then
   [[ ${#carpetas[@]} -gt 0 ]] || { echo "Error: no se encontró ninguna carpeta para revisar." >&2; exit 1; }
   set -- "${carpetas[@]}"
 fi
-command -v curl >/dev/null || { echo "Error: se necesita curl." >&2; exit 1; }
+if ! command -v curl >/dev/null; then
+  echo "Error: se necesita curl." >&2
+  if command -v apt-get >/dev/null; then   # Debian, Ubuntu, Kali, Mint...
+    echo "Instálalo con:  sudo apt-get install -y curl" >&2
+  fi
+  exit 1
+fi
 
 # Codifica cada segmento de una ruta para la URL (espacios, tildes, ñ, etc.)
 urlencode_path() {
