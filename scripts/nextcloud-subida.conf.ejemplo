@@ -1,7 +1,0 @@
-# Copia este archivo a ~/.config/nextcloud-subida.conf y protégelo:
-#   chmod 600 ~/.config/nextcloud-subida.conf
-NC_URL="https://tu-nextcloud.ejemplo.com"
-NC_USER="tu_usuario"
-NC_PASS="xxxxx-xxxxx-xxxxx-xxxxx-xxxxx"   # Ajustes → Seguridad → Crear contraseña de aplicación
-NC_DESTINO="Respaldos/Documentos"
-NC_EXTENSIONES="docx txt"

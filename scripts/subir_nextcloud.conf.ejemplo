@@ -1,0 +1,14 @@
+# Copia este archivo como "subir_nextcloud.conf" en la MISMA carpeta que los scripts.
+# Así sirve para cualquier usuario que los ejecute en el equipo.
+
+# Enlace compartido de Nextcloud (debe permitir subir archivos)
+NC_ENLACE="https://172.29.2.100/index.php/s/TOKEN"
+
+# Contraseña del enlace, si se la pusiste al compartir (si no, dejar vacío)
+NC_ENLACE_PASS=""
+
+# Tipos de archivo a copiar
+NC_EXTENSIONES="txt doc docx jpg jpeg pdf xls xlsx xlsm csv ppt pptx pps ppsx"
+
+# 1 = aceptar certificado autofirmado (necesario si entras por IP con https)
+NC_IGNORAR_CERT=1
